@@ -13,6 +13,7 @@ import subprocess
 import sys
 from PIL import Image
 from PIL import ImageOps
+from security import safe_command
 
 RUNNING_PYTHON_2 = sys.version_info[0] == 2
 
@@ -20,7 +21,7 @@ scrotExists = False
 maimExists = False
 try:
     if sys.platform not in ('java', 'darwin', 'win32'):
-        whichProc = subprocess.Popen(['which', 'scrot'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        whichProc = safe_command.run(subprocess.Popen, ['which', 'scrot'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         scrotExists = whichProc.wait() == 0
 except:
     # if there is no "which" program to find scrot, then assume there is no scrot.
@@ -28,7 +29,7 @@ except:
 
 try:
     if sys.platform not in ('java', 'darwin', 'win32'):
-        whichProc = subprocess.Popen(['which', 'maim'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        whichProc = safe_command.run(subprocess.Popen, ['which', 'maim'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         maimExists = whichProc.wait() == 0
 except:
     # if there is no "which" program to find maim, then assume there is no maim.
@@ -133,7 +134,7 @@ def _screenshot_osx(imageFilename=None):
         tmpFilename = '.screenshot%s.png' % (datetime.datetime.now().strftime('%Y-%m%d_%H-%M-%S-%f'))
     else:
         tmpFilename = imageFilename
-    subprocess.call(['screencapture', '-x', tmpFilename])
+    safe_command.run(subprocess.call, ['screencapture', '-x', tmpFilename])
     im = Image.open(tmpFilename)
     if imageFilename is None:
         os.unlink(tmpFilename)
@@ -149,12 +150,12 @@ def _screenshot_linux(imageFilename=None, region=None):
         tmpFilename = imageFilename
     if scrotExists:
         if not region:
-            subprocess.call(['scrot', tmpFilename])
+            safe_command.run(subprocess.call, ['scrot', tmpFilename])
         else:
             if not maimExists:
                 raise NotImplementedError('"maim" must be installed to use screenshot functions with region in Linux. Run: sudo apt-get install maim')
             left,top,width,height = [str(x) for x in region]
-            subprocess.call(['maim','-x',left,'-y',top,'-w',width,'-h',height, tmpFilename])
+            safe_command.run(subprocess.call, ['maim','-x',left,'-y',top,'-w',width,'-h',height, tmpFilename])
         im = Image.open(tmpFilename)
         if imageFilename is None:
             os.unlink(tmpFilename)
