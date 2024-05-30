@@ -28,6 +28,7 @@ You will need PIL/Pillow to use the screenshot features.
 
 
 from __future__ import absolute_import, division, print_function
+import math
 
 
 __version__ = '0.9.36'
@@ -160,7 +161,7 @@ def _autoPause(pause, _pause):
     if _pause:
         if pause is not None:
             time.sleep(pause)
-        elif PAUSE != 0:
+        elif not math.isclose(PAUSE, 0, rel_tol=1e-09, abs_tol=0.0):
             time.sleep(PAUSE)
 
 
